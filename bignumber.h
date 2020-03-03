@@ -4,11 +4,11 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-
-using namespace std;
+#include <memory>
+#include <vector>
 
 /**
-@brief Класс работы с большими числами
+@brief Class for working with big numbers
 */
 class BigNumber
 {
@@ -25,11 +25,11 @@ public:
 
     BigNumber() = default;
 
-    BigNumber(const string& str1, NumbSystem system = NumbSystem::DEC);
+    BigNumber(const std::string& str1, NumbSystem system = NumbSystem::DEC);
 
     BigNumber(int numb);
 
-    BigNumber(BigNumber const &v1);
+    BigNumber(const BigNumber &v1);
 
     BigNumber(int *b1, int c);
 
@@ -37,23 +37,23 @@ public:
 
     ~BigNumber();
 
-    void setData(numType *ptr, int len);
+    void setData(const numType *ptr, int len);
 
     void setString(char *str1);
 
-    string getDecString() const;
+    std::string getDecString() const;
 
-    string getBinString() const;
+    std::string getBinString() const;
 
-    string getHexString() const;
+    std::string getHexString() const;
 
     void print() const;
 
     int size() const noexcept { return count_num; }
 
-    BigNumber& operator*(BigNumber const &v1);
+    BigNumber& operator*(const BigNumber &v1);
 
-    BigNumber& operator=(BigNumber const &v1);
+    BigNumber& operator=(const BigNumber &v1);
 
     BigNumber& operator=(BigNumber && b)
     {
@@ -65,12 +65,12 @@ public:
 
     BigNumber::numType& operator[] (int i)
     {
-        return pNumber[i];
+        return (*pNumber)[i];
     }
 
     const BigNumber::numType& operator[] (int i) const
     {
-        return pNumber[i];
+        return (*pNumber)[i];
     }
 
     void swap(BigNumber &b) noexcept
@@ -96,15 +96,16 @@ public:
 
     friend BigNumber operator/(const BigNumber &v1, const int &n);
 
-    friend ostream& operator << (ostream &s, const BigNumber &b);
+    friend std::ostream& operator << (std::ostream &s, const BigNumber &b);
 
     friend int operator%(const BigNumber &v1, const int &n);
 
     void setPrintFormat(const NumbSystem&value);
 
 private:
-    int count_num = 0;
-    numType *pNumber = nullptr;
+    int count_num{0};
+    //numType *pNumber = nullptr;
+    std::shared_ptr<std::vector<numType>> pNumber;
 
     NumbSystem printFormat = NumbSystem::DEC;
 };

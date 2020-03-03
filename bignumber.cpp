@@ -1,6 +1,8 @@
 #include "bignumber.h"
 
-BigNumber::BigNumber(const string&str1, NumbSystem system)
+BigNumber::BigNumber(const std::string& str1, NumbSystem system):
+    count_num{0}
+    , pNumber{nullptr}
 {
     if(str1.size() == 0) return;
 
@@ -14,10 +16,11 @@ BigNumber::BigNumber(const string&str1, NumbSystem system)
             if(len > 0)
             {
                 count_num = len;
-                pNumber = new numType[count_num];
+                pNumber = std::make_shared<std::vector<numType>>(count_num);
+
                 for(int iii = 0; iii<count_num; iii++)
                 {
-                    pNumber[iii] = str1[count_num - iii - 1] - 48;
+                    (*pNumber)[iii] = str1[count_num - iii - 1] - 48;
                 }
             }
         }
@@ -85,71 +88,52 @@ BigNumber::BigNumber(const string&str1, NumbSystem system)
 			*this = num_res;
 		}
 		break;
-
 	}
 }
 
 BigNumber::BigNumber(int numb)
 {
-    //char str1[256];
-    //str1[0] = 0;
-    //sprintf(str1, "%d", numb);
-    string str1 = std::to_string(numb);
+    std::string str1 = std::to_string(numb);
 
     count_num = static_cast<int>(str1.size());
-    pNumber = new numType[count_num];
+    pNumber = std::make_shared<std::vector<numType>>(count_num);
 
-    for(int iii = 0; iii<count_num; iii++)
-    {
-        char ch1 = str1[count_num - iii - 1] - 48;
-        pNumber[iii] = ch1;
+    for(int iii = 0; iii<count_num; iii++) {
+        (*pNumber)[iii] = str1[count_num - iii - 1] - 48;
     }
 }
 
-BigNumber::BigNumber(const BigNumber&v1)
+BigNumber::BigNumber(const BigNumber &v1)
 {
     count_num = v1.count_num;
-    pNumber = new numType[count_num];
-    for(int iii = 0; iii < count_num; iii++)
-    {
-        pNumber[iii] = v1.pNumber[iii];
-    }
+
+    pNumber = std::make_shared<std::vector<numType>>(count_num);
+    std::copy(v1.pNumber->begin(), v1.pNumber->end(), pNumber->begin());
 }
 
 BigNumber::BigNumber(int*b1, int c)
 {
-    this->count_num = c;
-    pNumber = new numType[count_num];
-    for(int iii = 0; iii < this->count_num; iii++)
-    {
-        pNumber[iii] = b1[iii];
-    }
+    count_num = c;
+    pNumber = std::make_shared<std::vector<numType>>(count_num);
+
+    std::copy_n(b1, count_num, pNumber->begin());
 }
 
 BigNumber::~BigNumber()
 {
-    delete []pNumber;
+    //delete []pNumber;
 }
 
 
-void BigNumber::setData(numType*ptr, int len)
+void BigNumber::setData(const numType*ptr, int len)
 {
     this->count_num = len;
 
-    if(pNumber)
-    {
-        delete []pNumber;
-    }
-
-    pNumber = nullptr;
-
     if(len > 0)
     {
-        pNumber = new numType[count_num];
-        for(int iii = 0; iii < this->count_num; iii++)
-        {
-            pNumber[iii] = ptr[iii];
-        }
+        pNumber = std::make_shared<std::vector<numType>>(count_num);
+        std::copy_n(ptr, count_num, pNumber->begin());
+
     }
 }
 
@@ -162,7 +146,7 @@ void BigNumber::setString(char *str1)
     //printf("count=%d\n", this->count);
     for(iii = 0; iii<this->count_num; iii++)
     {
-        char ch1 = static_cast<char>(pNumber[this->count_num - iii - 1] + 48);
+        char ch1 = static_cast<char>((*pNumber)[this->count_num - iii - 1] + 48);
         //printf("ch1=%c \n", ch1);
         *(str1 + iii) = ch1;
     }
@@ -170,25 +154,25 @@ void BigNumber::setString(char *str1)
     *(str1 + iii) = 0;
 }
 
-string BigNumber::getDecString() const
+std::string BigNumber::getDecString() const
 {
-    string strDec;
+    std::string strDec;
     strDec.reserve(count_num);
 
     for(int iii = 0; iii<count_num; iii++)
     {
-        strDec += static_cast<char>(pNumber[this->count_num - iii - 1] + 48);
+        strDec += static_cast<char>((*pNumber)[this->count_num - iii - 1] + 48);
     }
 
     return strDec;
 }
 
-string BigNumber::getBinString() const
+std::string BigNumber::getBinString() const
 {
     int ost = 0;
     BigNumber num1 = {*this};
     BigNumber num2;
-    string      strBin;
+    std::string      strBin;
 
     strBin.reserve(this->count_num * 4);
 
@@ -219,14 +203,14 @@ string BigNumber::getBinString() const
     return strBin;
 }
 
-string BigNumber::getHexString() const
+std::string BigNumber::getHexString() const
 {
 	int ost = 0;
 
 	BigNumber num1 = {*this};
 	BigNumber num2;
 
-    string strHex;
+    std::string strHex;
     strHex.reserve(this->count_num + 2);
 
 
@@ -261,7 +245,7 @@ string BigNumber::getHexString() const
 }
 
 //Перегрузка операции вывода в поток
-ostream& operator << (ostream &s, const BigNumber &b)
+std::ostream& operator << (std::ostream &s, const BigNumber &b)
 {
     if(b.count_num == 0)
     {
@@ -298,7 +282,7 @@ void BigNumber::print() const
 
     for(int iii = 0; iii<count_num; iii++)
     {
-        printf("%d", pNumber[count_num - iii - 1]);
+        printf("%d", (*pNumber)[count_num - iii - 1]);
     }
     printf("\n");
 }
@@ -321,7 +305,7 @@ BigNumber& BigNumber::operator*(BigNumber const &v1)
     {
         for(int jx=0; jx < v1.count_num; jx++)
         {
-            arr1[ix + jx] += this->pNumber[ix]*v1.pNumber[jx];
+            arr1[ix + jx] += (*pNumber)[ix]*v1.pNumber->at(jx);
         }
     }
 
@@ -346,21 +330,11 @@ BigNumber& BigNumber::operator*(BigNumber const &v1)
 
 BigNumber& BigNumber::operator = (BigNumber const &v1)
 {
-	if(this != &v1)
-	{
+	if(this != &v1) {
 		this->count_num = v1.count_num;
-		
-		if(this->pNumber)
-		{
-			delete []this->pNumber;
-		}
-		
-		this->pNumber = new numType[this->count_num];
-		
-		for(int iii = 0; iii < count_num; iii++)
-		{
-			this->pNumber[iii] = v1.pNumber[iii];
-		}
+				
+		pNumber = std::make_shared<std::vector<numType>>(count_num);
+		std::copy(v1.pNumber->begin(), v1.pNumber->end(), pNumber->begin());
 	}
 	return *this;
 }
@@ -382,7 +356,7 @@ BigNumber operator / (BigNumber const &v1, int const &n)
     }
     for(int iii = len - 1; iii >= 0; iii--)
     {
-        int cur = ost*osn + v1.pNumber[iii];
+        int cur = ost*osn + v1.pNumber->at(iii);
         arr1[iii] = cur/n;
         ost = cur % n;
     }
@@ -419,7 +393,7 @@ int operator%(BigNumber const &v1, int const &n)
     }
     for(int iii = len - 1; iii >= 0; iii--)
     {
-        int cur = ost*osn + v1.pNumber[iii];
+        int cur = ost*osn + v1.pNumber->at(iii);
         arr1[iii] = cur/n;
         ost = cur % n;
     }
@@ -447,7 +421,7 @@ BigNumber& BigNumber::operator^(int range)
     if(range == 0)
     {
         aaa = new BigNumber("1");
-        this->setData(aaa->pNumber, aaa->count_num);
+        this->setData(aaa->pNumber->data(), aaa->count_num);
     }
     else
         if(range == 1)
@@ -473,7 +447,7 @@ BigNumber& BigNumber::operator^(int range)
                 //bbb->print();
             }
             //printf("end loop\n");
-            this->setData(aaa->pNumber, aaa->count_num);
+            this->setData(aaa->pNumber->data(), aaa->count_num);
         }
 
     return *this;
@@ -519,11 +493,11 @@ const BigNumber& BigNumber::operator += (const BigNumber&v1)
 
     for(int iii=0; iii<v2.count_num; ++iii)
     {
-        arr1[iii] = v2.pNumber[iii];
+        arr1[iii] = v2.pNumber->at(iii);
     }
     for(int iii=0; iii<v1.count_num; ++iii)
     {
-        arr2[iii] = v1.pNumber[iii];
+        arr2[iii] = v1.pNumber->at(iii);
     }
     for(int ix=0; ix<len; ix++)
     {
@@ -578,9 +552,9 @@ bool operator <(const BigNumber &v1, const BigNumber &v2)
         int len = v1.count_num - 1;
         while(len >= 0)
         {
-            if(v1.pNumber[len] != v2.pNumber[len])
+            if(v1.pNumber->at(len) != v2.pNumber->at(len))
             {
-                result = v1.pNumber[len] < v2.pNumber[len];
+                result = v1.pNumber->at(len) < v2.pNumber->at(len);
                 break;
             }
             --len;

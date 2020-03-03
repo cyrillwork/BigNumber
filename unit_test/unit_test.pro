@@ -1,10 +1,10 @@
 QT += core
 QT -= gui
 
-QMAKE_CXXFLAGS += -std=c++11
-CONFIG += c++11
+QMAKE_CXXFLAGS += -std=c++1y
+CONFIG += c++1y
 
-TARGET = unit_test.e
+TARGET = unit_test
 CONFIG += console
 CONFIG -= app_bundle
 
